@@ -54,6 +54,67 @@ def init_db():
 # Initialize Database Schema
 init_db()
 
+def seed_db():
+    """Populate DB with sample data if empty."""
+    conn = get_db_connection()
+    book_count = conn.execute('SELECT COUNT(*) FROM books').fetchone()[0]
+    if book_count > 0:
+        conn.close()
+        return  # Already seeded
+
+    today = datetime.utcnow().date()
+
+    books = [
+        ("Clean Code",                   "Robert C. Martin",   "9780132350884", 5, 3),
+        ("The Pragmatic Programmer",      "David Thomas",       "9780135957059", 4, 4),
+        ("Introduction to Algorithms",   "Thomas H. Cormen",   "9780262033848", 6, 5),
+        ("Python Crash Course",          "Eric Matthes",       "9781593279288", 8, 6),
+        ("You Don't Know JS",            "Kyle Simpson",       "9781491924464", 3, 2),
+        ("Design Patterns",              "Gang of Four",       "9780201633610", 4, 4),
+        ("The Great Gatsby",             "F. Scott Fitzgerald","9780743273565", 3, 3),
+        ("1984",                         "George Orwell",      "9780451524935", 5, 3),
+        ("To Kill a Mockingbird",        "Harper Lee",         "9780060935467", 4, 4),
+        ("Sapiens",                      "Yuval Noah Harari",  "9780062316097", 6, 5),
+        ("Atomic Habits",               "James Clear",        "9780735211292", 7, 5),
+        ("Deep Work",                    "Cal Newport",        "9781455586691", 3, 2),
+    ]
+    conn.executemany(
+        'INSERT OR IGNORE INTO books (title, author, isbn, total_copies, available_copies) VALUES (?,?,?,?,?)',
+        books
+    )
+
+    students = [
+        ("S001", "Aryan Sharma"),
+        ("S002", "Priya Patel"),
+        ("S003", "Rohan Mehta"),
+        ("S004", "Sneha Roy"),
+        ("S005", "Soumyaditya"),
+    ]
+    conn.executemany('INSERT OR IGNORE INTO students (id, name) VALUES (?,?)', students)
+
+    # Issue some books — mix of active and overdue
+    issued = [
+        ("S001", "9780132350884", str(today - timedelta(days=5)),  str(today + timedelta(days=9))),
+        ("S002", "9781593279288", str(today - timedelta(days=18)), str(today - timedelta(days=4))),  # overdue
+        ("S003", "9780262033848", str(today - timedelta(days=2)),  str(today + timedelta(days=12))),
+        ("S004", "9780062316097", str(today - timedelta(days=22)), str(today - timedelta(days=8))),  # overdue
+        ("S005", "9780735211292", str(today - timedelta(days=1)),  str(today + timedelta(days=13))),
+    ]
+    for student_id, isbn, issue_date, due_date in issued:
+        conn.execute(
+            'INSERT INTO issued_books (student_id, isbn, issue_date, due_date) VALUES (?,?,?,?)',
+            (student_id, isbn, issue_date, due_date)
+        )
+        conn.execute(
+            'UPDATE books SET available_copies = available_copies - 1 WHERE isbn = ?', (isbn,)
+        )
+
+    conn.commit()
+    conn.close()
+
+# Seed with sample data
+seed_db()
+
 @app.route('/')
 def index():
     return render_template('index.html')
