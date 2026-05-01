@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShelfSync – Next Gen Library Management</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- App Container -->
+    <div id="app" class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <div class="logo-icon"><i class="fa-solid fa-layer-group"></i></div>
+                <span>ShelfSync</span>
+                <button class="close-sidebar-btn d-mobile" onclick="app.ui.toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <nav class="nav-menu">
+                <div class="nav-section">MAIN</div>
+                <button class="nav-link active" data-tab="dashboard">
+                    <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
+                </button>
+                <button class="nav-link" data-tab="books">
+                    <i class="fa-solid fa-book"></i> <span>Books Catalog</span>
+                </button>
+                <button class="nav-link" data-tab="members">
+                    <i class="fa-solid fa-users"></i> <span>Members</span>
+                </button>
+                <button class="nav-link" data-tab="circulation">
+                    <i class="fa-solid fa-right-left"></i> <span>Issue & Return</span>
+                </button>
+                <button class="nav-link" data-tab="reports">
+                    <i class="fa-solid fa-file-invoice"></i> <span>Reports</span>
+                </button>
+            </nav>
+            
+            <div class="user-profile-sidebar mt-auto">
+                <img src="https://ui-avatars.com/api/?name=Soumyaditya&background=1E3A8A&color=fff" alt="User">
+                <div class="user-info">
+                    <span class="name">Soumyaditya</span>
+                    <span class="role">Library Administrator</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="workspace">
+            <!-- Topbar -->
+            <header class="topbar">
+                <button class="menu-toggle-btn d-mobile" onclick="app.ui.toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                
+                <div class="search-wrap">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="global-search" placeholder="Search books, author, ISBN...">
+                </div>
+
+                <div class="topbar-actions">
+                    <button class="icon-btn" onclick="app.ui.showToast('Notifications coming soon', 'warning')"><i class="fa-regular fa-bell"></i><span class="badge-dot"></span></button>
+                    <button class="icon-btn" onclick="app.ui.openModal('adminSettingsModal')"><i class="fa-solid fa-gear"></i></button>
+                </div>
+            </header>
+
+            <!-- Views Container -->
+            <div class="views-container">
+                <!-- Dashboard View -->
+                <div id="view-dashboard" class="view-section active">
+                    <div class="section-header">
+                        <h2>Dashboard Overview</h2>
+                        <p class="text-muted">Welcome back, here's what's happening today.</p>
+                    </div>
+                    
+                    <!-- Stats widgets -->
+                    <div class="stats-grid">
+                        <div class="stat-card glass block-anim">
+                            <div class="stat-icon bg-primary-light">
+                                <i class="fa-solid fa-book-bookmark text-primary"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3>Total Titles</h3>
+                                <p class="stat-value" id="dash-total-titles">...</p>
+                            </div>
+                        </div>
+                        <div class="stat-card glass block-anim delay-1">
+                            <div class="stat-icon bg-success-light">
+                                <i class="fa-solid fa-cubes text-success"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3>Total Copies</h3>
+                                <p class="stat-value" id="dash-total-copies">...</p>
+                            </div>
+                        </div>
+                        <div class="stat-card glass block-anim delay-2">
+                            <div class="stat-icon bg-teal-light">
+                                <i class="fa-solid fa-check-to-slot text-teal"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3>Available</h3>
+                                <p class="stat-value" id="dash-available-copies">...</p>
+                            </div>
+                        </div>
+                        <div class="stat-card glass block-anim delay-3">
+                            <div class="stat-icon bg-warning-light">
+                                <i class="fa-solid fa-hands-holding text-warning"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3>Active Issues</h3>
+                                <p class="stat-value" id="dash-active-issues">...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts & Activity -->
+                    <div class="dashboard-grid">
+                        <div class="chart-card glass block-anim delay-4">
+                            <div class="card-header">
+                                <h3>Inventory Distribution</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="inventoryChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-card glass block-anim delay-5">
+                            <div class="card-header">
+                                <h3>Recent Issues</h3>
+                                <button class="btn-ghost btn-sm" onclick="app.switchTab('circulation')">View All</button>
+                            </div>
+                            <div class="activity-list" id="dash-recent-activity">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Books Catalog View -->
+                <div id="view-books" class="view-section">
+                    <div class="section-header space-between">
+                        <div>
+                            <h2>Books Catalog</h2>
+                            <p class="text-muted" id="books-count-label">Loading records...</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="app.ui.openModal('addBookModal')">
+                            <i class="fa-solid fa-plus"></i> Add Book
+                        </button>
+                    </div>
+
+                    <div class="table-card glass">
+                        <div class="table-toolbar">
+                            <div class="search-input">
+                                <i class="fa-solid fa-search text-muted"></i>
+                                <input type="text" id="books-search-input" placeholder="Filter by Title, Author, ISBN...">
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table" id="books-table">
+                                <thead>
+                                    <tr>
+                                        <th>Book Info</th>
+                                        <th>Author</th>
+                                        <th>ISBN</th>
+                                        <th>Inventory</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="books-list-tbody">
+                                </tbody>
+                            </table>
+                            <div id="books-empty" class="empty-state d-none">
+                                <div style="font-size: 3rem; color: #cbd5e1; margin-bottom: 20px;"><i class="fa-solid fa-book-open"></i></div>
+                                <h4>No books found</h4>
+                                <p class="text-muted">Try a different search or add a new book.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Members View -->
+                <div id="view-members" class="view-section">
+                    <div class="section-header space-between">
+                        <div>
+                            <h2>Members Directory</h2>
+                            <p class="text-muted" id="members-count-label">Loading records...</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="app.ui.openModal('addMemberModal')">
+                            <i class="fa-solid fa-user-plus"></i> Add Member
+                        </button>
+                    </div>
+
+                    <div class="table-card glass">
+                        <div class="table-toolbar">
+                            <div class="search-input">
+                                <i class="fa-solid fa-search text-muted"></i>
+                                <input type="text" id="members-search-input" placeholder="Search members by name or ID...">
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Books Issued</th>
+                                        <th>Fine Amount</th>
+                                        <th>Status</th>
+                                        <th class="text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="members-list-tbody">
+                                </tbody>
+                            </table>
+                            <div id="members-empty" class="empty-state d-none">
+                                <div style="font-size: 3rem; color: #cbd5e1; margin-bottom: 20px;"><i class="fa-solid fa-users-slash"></i></div>
+                                <h4>No members found</h4>
+                                <p class="text-muted">Try a different search or register a new member.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Circulation (Issue & Return) View -->
+                <div id="view-circulation" class="view-section">
+                    <div class="section-header space-between">
+                        <div>
+                            <h2>Issue & Return Ledger</h2>
+                            <p class="text-muted">Manage all book transactions</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="app.ui.openModal('issueBookModal')">
+                            <i class="fa-solid fa-right-from-bracket"></i> Issue Book
+                        </button>
+                    </div>
+
+                    <div class="tabs-navigation" id="circulation-tabs">
+                        <button class="tab-btn active" data-filter="all">All Records</button>
+                        <button class="tab-btn" data-filter="issued">Active Issues</button>
+                        <button class="tab-btn badge-alert-tab" data-filter="overdue">Overdue <span class="pill" id="overdue-pill-count">0</span></button>
+                    </div>
+
+                    <div class="table-card glass mt-4">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Book Info</th>
+                                        <th>Student</th>
+                                        <th>Issue Date</th>
+                                        <th>Due Date</th>
+                                        <th>Fine</th>
+                                        <th>Status</th>
+                                        <th class="text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="circulation-list-tbody">
+                                </tbody>
+                            </table>
+                            <div id="circulation-empty" class="empty-state d-none">
+                                <div style="font-size: 3rem; color: #cbd5e1; margin-bottom: 20px;"><i class="fa-solid fa-check-double"></i></div>
+                                <h4>No active records found.</h4>
+                                <p class="text-muted">There are no matching issues for the selected filter.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports View -->
+                <div id="view-reports" class="view-section">
+                    <div class="section-header">
+                        <h2>Analytics & Reports</h2>
+                        <p class="text-muted">Detailed performance and inventory metrics.</p>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="chart-card glass">
+                            <div class="card-header">
+                                <h3>Total Issues Trend</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="reportsTrendChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card glass">
+                            <div class="card-header">
+                                <h3>Availability Status</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="reportsStatusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-card glass mt-4">
+                        <div class="card-header" style="padding: 1.5rem 1.5rem 0 1.5rem;">
+                            <h3>Top Active Borrowers</h3>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Active Issues</th>
+                                        <th>Total Fines</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reports-top-borrowers">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </main>
+    </div>
+
+    <!-- MODALS -->
+    
+    <!-- Add Book Modal -->
+    <div class="modal" id="addBookModal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h3>Add / Restock Book</h3>
+                <button class="icon-btn close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="addBookForm">
+                    <div class="form-group mb-3">
+                        <label>Book Title</label>
+                        <input type="text" id="add-book-title" required class="form-control" placeholder="e.g. Clean Code">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Author</label>
+                        <input type="text" id="add-book-author" required class="form-control" placeholder="e.g. Robert C. Martin">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>ISBN</label>
+                        <input type="text" id="add-book-isbn" required class="form-control" placeholder="e.g. 9780132350884">
+                        <small class="text-muted">If ISBN exists, it will restock automatically.</small>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label>Number of Copies</label>
+                        <input type="number" id="add-book-copies" required min="1" value="1" class="form-control">
+                    </div>
+                    <div class="modal-actions text-right">
+                        <button type="button" class="btn btn-ghost close-modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="btn-submit-book">Add Copies</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Member Modal -->
+    <div class="modal" id="addMemberModal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h3>Register Detail</h3>
+                <button class="icon-btn close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="addMemberForm">
+                    <div class="form-group mb-3">
+                        <label>Student ID</label>
+                        <input type="text" id="add-member-id" required class="form-control" placeholder="e.g. S001">
+                    </div>
+                    <div class="form-group mb-4">
+                        <label>Full Name</label>
+                        <input type="text" id="add-member-name" required class="form-control" placeholder="e.g. Alice Smith">
+                    </div>
+                    <div class="modal-actions text-right">
+                        <button type="button" class="btn btn-ghost close-modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="btn-submit-member">Register</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Member Modal -->
+    <div class="modal" id="editMemberModal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h3>Edit Member Info</h3>
+                <button class="icon-btn close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="editMemberForm">
+                    <input type="hidden" id="edit-member-id">
+                    <div class="form-group mb-4">
+                        <label>Full Name</label>
+                        <input type="text" id="edit-member-name" required class="form-control">
+                    </div>
+                    <div class="modal-actions text-right">
+                        <button type="button" class="btn btn-ghost close-modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Issue Book Modal -->
+    <div class="modal" id="issueBookModal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h3>Issue Book</h3>
+                <button class="icon-btn close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="issueBookForm">
+                    <div class="form-group mb-3">
+                        <label>Book ISBN</label>
+                        <input type="text" id="issue-isbn" required class="form-control" placeholder="Enter ISBN">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Student ID</label>
+                        <input type="text" id="issue-student" required class="form-control" placeholder="Enter Student ID">
+                    </div>
+                    <div class="form-group mb-4">
+                        <label>Duration (days)</label>
+                        <input type="number" id="issue-duration" required min="1" value="14" class="form-control">
+                    </div>
+                    <div class="modal-actions text-right">
+                        <button type="button" class="btn btn-ghost close-modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" style="background-color: var(--teal); color: white;">Issue Book</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Process Return Modal -->
+    <div class="modal" id="returnBookModal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h3>Process Return</h3>
+                <button class="icon-btn close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="returnBookForm">
+                    <input type="hidden" id="return-modal-isbn">
+                    <input type="hidden" id="return-modal-student">
+                    
+                    <div class="return-info mb-4 text-center">
+                        <div class="mb-2" style="font-size: 2.5rem; color: var(--primary);"><i class="fa-solid fa-arrows-rotate"></i></div>
+                        <h4 id="return-book-title" class="mb-1" style="font-size: 1.25rem;">Book Title</h4>
+                        <p class="text-muted mb-0">Student: <span id="return-student-name">Name</span> (<span id="return-student-id">ID</span>)</p>
+                    </div>
+                    
+                    <div id="return-fine-alert" class="alertBox danger d-none mb-4">
+                        <div class="alertBox-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
+                        <div class="alertBox-content" style="flex:1">
+                            <strong style="color:var(--danger)">Overdue Return</strong>
+                            <p style="margin: 4px 0 8px; font-size:0.9rem;">This book is past its due date. A late fee must be collected.</p>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span>Fine Amount:</span>
+                                <strong id="return-fine-amount" style="font-size:1.1rem; color:var(--danger);">₹0</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-actions flex-center" id="return-actions-wrapper">
+                        <button type="button" class="btn btn-ghost close-modal">Cancel</button>
+                        <button type="button" class="btn btn-success" id="btn-confirm-return" style="background-color: var(--success); color: white;">Confirm Return</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirm Delete Modal -->
+    <div class="modal" id="deleteConfirmModal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h3>Confirm Action</h3>
+                <button class="icon-btn close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div style="font-size: 3rem; color: var(--danger); margin-bottom: 20px;">
+                    <i class="fa-regular fa-trash-can"></i>
+                </div>
+                <h4>Delete this member?</h4>
+                <p class="text-muted mt-2 mb-4">This action cannot be undone. All active issues will be cleared and the library inventory will be restored.</p>
+                <div class="modal-actions flex-center mt-4">
+                    <button type="button" class="btn btn-ghost close-modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="btn-confirm-delete" style="background-color: var(--danger); color: white;">Yes, Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Settings Modal -->
+    <div class="modal" id="adminSettingsModal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h3>Admin Settings</h3>
+                <button class="icon-btn close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="adminSettingsForm">
+                    <div class="form-group mb-3 text-center">
+                        <div style="position: relative; display: inline-block;">
+                            <img id="admin-preview-img" src="https://ui-avatars.com/api/?name=Soumyaditya&background=1E3A8A&color=fff" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary-light);">
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Display Name</label>
+                        <input type="text" id="admin-name-input" required class="form-control" value="Soumyaditya">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Role / Designation</label>
+                        <input type="text" id="admin-role-input" required class="form-control" value="Library Administrator">
+                    </div>
+                    <div class="form-group mb-4">
+                        <label>Contact Email</label>
+                        <input type="email" id="admin-email-input" class="form-control" value="admin@shelfsync.com">
+                    </div>
+                    <div class="modal-actions text-right">
+                        <button type="button" class="btn btn-ghost close-modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>
