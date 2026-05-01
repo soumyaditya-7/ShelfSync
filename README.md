@@ -1,11 +1,10 @@
 <div align="center">
   <h1>📚 ShelfSync</h1>
-  <p><em>Next Gen Library Management</em></p>
-  
-  [![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)](https://www.python.org/)
-  [![Flask](https://img.shields.io/badge/Flask-Web_Framework-black.svg)](https://flask.palletsprojects.com/)
-  [![SQLite](https://img.shields.io/badge/SQLite-Database-lightgrey.svg)](https://www.sqlite.org/)
-  [![Vanilla JS](https://img.shields.io/badge/JavaScript-Vanilla-yellow.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+  <p><em>Library Management System — Python College Assignment</em></p>
+
+  [![Python](https://img.shields.io/badge/Python-3.12-blue.svg?logo=python)](https://www.python.org/)
+  [![Flask](https://img.shields.io/badge/Flask-Web%20Framework-black.svg?logo=flask)](https://flask.palletsprojects.com/)
+  [![SQLite](https://img.shields.io/badge/SQLite-Database-lightgrey.svg?logo=sqlite)](https://www.sqlite.org/)
   [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?logo=vercel)](https://shelf-sync-murex.vercel.app/)
 
   <br/>
@@ -16,13 +15,30 @@
 
 ---
 
-## 🚀 Elevator Pitch
-Managing a library shouldn't require complex, bloated software. **ShelfSync – Next Gen Library Management** provides a sleek, responsive **Web Application** for day-to-day operations and a lightweight **Command Line Interface (CLI)** for quick terminal-based tasks. Built with performance and simplicity in mind, it's designed to make managing books, tracking student records, and handling fines completely frictionless.
+## 📋 About This Project
 
-## 💡 The Problem & Solution
-**The Problem:** Traditional library systems are often clunky, hard to set up, and lack modern UI/UX principles, leading to slow operations and a steep learning curve for librarians.
+**ShelfSync** is a **Python-based Library Management System** developed as a college assignment. The entire backend logic — including the web server, REST API, database operations, and business rules — is written in **Python**.
 
-**The Solution:** We built a zero-configuration, Dynamic Single Page Application (SPA) powered by a lightweight Flask backend and a modern glassmorphism UI. It features real-time search, automated fine calculations, and instant book returns.
+The project is delivered in **two versions**:
+
+| Version | File | Description |
+|---|---|---|
+| **CLI Application** | `library_management.py` | Pure Python terminal app using OOP (Classes) — primary assignment deliverable |
+| **Web Application** | `app.py` | Python Flask web server with a browser-based UI (extended version) |
+
+---
+
+## 🐍 Python Concepts Used
+
+| Concept | Where Used |
+|---|---|
+| **Classes & Objects (OOP)** | `Book` and `Library` classes in `library_management.py` |
+| **Functions & Methods** | `add_book()`, `issue_book()`, `return_book()`, `search_books()` |
+| **Loops & Conditionals** | Menu-driven CLI loop, fine calculation logic |
+| **Exception Handling** | `try/except` for invalid input and DB migrations |
+| **File I/O / Database** | `sqlite3` module for persistent data storage |
+| **Modules & Imports** | `sqlite3`, `datetime`, `os`, `flask` |
+| **String Formatting** | f-strings throughout for user messages and queries |
 
 ---
 
@@ -30,50 +46,35 @@ Managing a library shouldn't require complex, bloated software. **ShelfSync – 
 
 | Feature | Description |
 |---|---|
-| **Dashboard Overview** | Displays total book titles, total copies, and available copies with a full catalog table. |
-| **Members & Fines** | View registered members, their checked-out books, and dynamically calculated fines (₹30/day). |
-| **Issue & Return Ledger** | Centralized interface for managing all book transactions with inline return actions. |
-| **Real-time Search** | Instantly filter the catalog by title, author, or ISBN. |
-| **Dual Interface** | Access via the rich Web UI or the lightning-fast Python CLI. |
+| **Add Books** | Add new titles or restock existing books by ISBN |
+| **Register Members** | Add, edit, and delete student records |
+| **Issue & Return** | Issue books to students with a configurable loan period |
+| **Automated Fine System** | Calculates ₹30/day fine for overdue books automatically |
+| **3-Book Limit** | Enforces a maximum of 3 issued books per student |
+| **Real-time Search** | Filter the catalog instantly by title, author, or ISBN |
+| **Dashboard** | Overview of total titles, copies, availability & active issues |
 
 ---
 
-## 🛠️ Tech Stack
-
-- **Frontend:** HTML5, CSS3 (Glassmorphism design), Vanilla JavaScript (Fetch API)
-- **Backend:** Python 3.12, Flask
-- **Database:** SQLite (Zero-config, serverless)
-- **Architecture:** RESTful APIs, Client-Server model
-
 ## 🏗️ System Architecture
 
-The application communicates over HTTP via RESTful APIs, backed by a persistent SQLite database.
+The web version follows a **Client-Server Architecture** with Python handling all server-side logic.
 
-```mermaid
-graph TD
-    subgraph Frontend ["Client-Side (Browser)"]
-        UI["HTML & CSS UI (Glassmorphism)"]
-        JS["Vanilla JavaScript (Fetch API)"]
-        UI <-->|Events & DOM Updates| JS
-    end
-
-    subgraph Backend ["Server-Side (Flask)"]
-        Router["Flask App Router (app.py)"]
-        API["RESTful API Endpoints"]
-        Router --> API
-    end
-
-    subgraph Database ["Data Layer"]
-        DB[("SQLite — library.db")]
-    end
-
-    JS <-->|"HTTP JSON Requests"| Router
-    API <-->|"SQL Queries"| DB
+```
+Browser (HTML/CSS/JS)
+        │
+        │  HTTP Requests (JSON)
+        ▼
+  Flask Web Server  ◄──── app.py (Python)
+        │
+        │  SQL Queries via sqlite3 module
+        ▼
+  SQLite Database  ◄──── library.db
 ```
 
 ### Database Schema
 
-| Table | Key Columns |
+| Table | Columns |
 |---|---|
 | `books` | `id`, `title`, `author`, `isbn` (unique), `total_copies`, `available_copies` |
 | `students` | `id` (primary key), `name` |
@@ -84,41 +85,53 @@ graph TD
 ## 💻 How to Run Locally
 
 ### Prerequisites
-- Python 3.7+ installed on your system.
+- **Python 3.7+** must be installed.
 
-### 1️⃣ Running the Web Application
-1. Clone the repository and navigate to the project directory.
-2. Install the required dependency:
+### Option 1 — CLI Application (Primary Assignment)
+The standalone terminal app. No extra libraries needed.
+```bash
+python library_management.py
+```
+Follow the menu prompts to add books, issue, return, and search.
+
+### Option 2 — Web Application (Extended Version)
+1. Install the Flask dependency:
    ```bash
    pip install flask
    ```
-3. Start the Flask application server:
+2. Run the server:
    ```bash
    python app.py
    ```
-4. Open your web browser and navigate to: **http://127.0.0.1:8000**
-*(A `library.db` file will be auto-created on first run)*
+3. Open your browser at: **http://127.0.0.1:8000**
 
-### 2️⃣ Running the CLI Application
-Need to run tasks quickly from the terminal? Use the standalone CLI version!
-1. Open your terminal in the project directory.
-2. Start the CLI application:
-   ```bash
-   python library_management.py
-   ```
-3. Follow the interactive on-screen prompts.
+> A `library.db` SQLite file is auto-created on first run.
 
 ---
 
-## 🔮 What's Next? (Future Scope)
-- **Authentication & Roles:** Implementing Login functionality with Admin and Librarian roles.
-- **Email Notifications:** Automatic email alerts for overdue books.
-- **Barcode Scanner Integration:** Using the webcam to scan ISBN barcodes for instant checkouts.
-- **Cloud Deployment:** Containerizing with Docker and deploying to AWS/Heroku.
+## 📁 Project Structure
+
+```
+ShelfSync/
+│
+├── library_management.py   # ✅ CLI app — pure Python OOP (primary deliverable)
+├── app.py                  # Flask web server & REST API (extended version)
+│
+├── templates/
+│   └── index.html          # Web UI (Single Page Application)
+├── static/
+│   ├── style.css           # Glassmorphism CSS styling
+│   └── app.js              # Frontend JavaScript
+│
+├── library.db              # SQLite database (auto-generated)
+├── requirements.txt        # Python dependencies (flask)
+└── vercel.json             # Deployment configuration
+```
 
 ---
 
-## 👨‍💼 Team & Credits
-- **Developer:** Soumyaditya
-- **Role:** Full-Stack Developer & Library System Administrator
-- **Project Version:** 2.0 (Redesign Edition - Hackathon Ready)
+## 👨‍💼 Submission Details
+- **Student:** Soumyaditya
+- **Assignment:** Python Programming — Library Management System
+- **Language:** Python 3.12
+- **Libraries Used:** `flask`, `sqlite3` (stdlib), `datetime` (stdlib), `os` (stdlib)
