@@ -28,7 +28,8 @@ def init_db():
     conn.execute('''
         CREATE TABLE IF NOT EXISTS students (
             id TEXT PRIMARY KEY,
-            name TEXT NOT NULL
+            name TEXT NOT NULL,
+            trust_score INTEGER DEFAULT 100
         )
     ''')
     conn.execute('''
@@ -48,6 +49,12 @@ def init_db():
             conn.execute(f'ALTER TABLE issued_books ADD COLUMN {col} TEXT DEFAULT {default}')
         except sqlite3.OperationalError:
             pass  # Column already exists
+            
+    try:
+        conn.execute('ALTER TABLE students ADD COLUMN trust_score INTEGER DEFAULT 100')
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
     conn.commit()
     conn.close()
 
@@ -168,6 +175,7 @@ def get_students():
         students_list.append({
             "id": s['id'],
             "name": s['name'],
+            "trust_score": s.get('trust_score', 100) if 'trust_score' in s.keys() else 100,
             "issued_books": issued_isbns,
             "due_dates": due_dates
         })
@@ -242,6 +250,11 @@ def issue_book():
         conn.close()
         return jsonify({"error": "Student not found."}), 404
         
+    trust_score = student.get('trust_score', 100) if 'trust_score' in student.keys() else 100
+    if trust_score < 50:
+        conn.close()
+        return jsonify({"error": f"Issue blocked! Trust score is {trust_score} (Below 50). Fines must be paid."}), 400
+        
     issued_count = conn.execute('SELECT COUNT(*) as count FROM issued_books WHERE student_id = ?', (student_id,)).fetchone()['count']
     if issued_count >= 3:
         conn.close()
@@ -294,6 +307,10 @@ def return_book():
         return jsonify({"error": "Book not found in library."}), 404
         
     fine_str = ""
+    trust_change_str = ""
+    current_trust = student.get('trust_score', 100) if 'trust_score' in student.keys() else 100
+    new_trust = current_trust
+    
     due_date_str = dict(issued_record).get('due_date')
     if due_date_str:
         try:
@@ -303,15 +320,27 @@ def return_book():
                 days_overdue = (today - due_date).days
                 fine = days_overdue * 30
                 fine_str = f" Late payment of ₹{fine} collected."
+                
+                # Trust score penalty: -5 per day overdue
+                penalty = days_overdue * 5
+                new_trust = max(0, current_trust - penalty)
+                trust_change_str = f" Trust Score: -{penalty} (Now {new_trust})"
+            else:
+                # Trust score reward: +2 for on-time/early return
+                reward = 2
+                new_trust = min(100, current_trust + reward)
+                trust_change_str = f" Trust Score: +{reward} (Now {new_trust})"
         except ValueError:
             pass
 
     if dict(book)['available_copies'] < dict(book)['total_copies']:
         conn.execute('UPDATE books SET available_copies = available_copies + 1 WHERE isbn = ?', (isbn,))
         conn.execute('DELETE FROM issued_books WHERE id = (SELECT id FROM issued_books WHERE student_id = ? AND isbn = ? LIMIT 1)', (student_id, isbn))
+        if new_trust != current_trust:
+            conn.execute('UPDATE students SET trust_score = ? WHERE id = ?', (new_trust, student_id))
         conn.commit()
         conn.close()
-        return jsonify({"message": f"Returned '{dict(book)['title']}' successfully.{fine_str}"})
+        return jsonify({"message": f"Returned '{dict(book)['title']}' successfully.{fine_str}{trust_change_str}"})
     else:
         conn.close()
         return jsonify({"error": "All copies of this book are already in the library."}), 400

@@ -332,6 +332,11 @@ const app = {
 
                 const fineBadge = totalFine > 0 ? `<span class="badge badge-danger">₹${totalFine}</span>` : `<span class="text-muted">—</span>`;
                 const statusBadge = hasOverdue ? `<span class="badge badge-danger">Overdue</span>` : `<span class="badge badge-success">Active</span>`;
+                
+                let trustColorClass = "badge-success";
+                if (s.trust_score < 50) trustColorClass = "badge-danger";
+                else if (s.trust_score < 80) trustColorClass = "badge-warning";
+                const trustBadge = `<span class="badge ${trustColorClass}" style="${trustColorClass === 'badge-warning' ? 'background:#fef3c7; color:#d97706;' : ''}"><i class="fa-solid fa-star" style="font-size:0.75rem; margin-right:3px;"></i>${s.trust_score}</span>`;
 
                 const tr = document.createElement('tr');
                 tr.className = 'scroll-anim';
@@ -346,6 +351,7 @@ const app = {
                         </div>
                     </td>
                     <td>${fineBadge}</td>
+                    <td>${trustBadge}</td>
                     <td>${statusBadge}</td>
                     <td class="text-right">
                         <button class="action-btn edit" onclick="app.handlers.triggerEditMember('${s.id}', '${s.name.replace(/'/g, "\\'")}')"><i class="fa-solid fa-pen"></i></button>
