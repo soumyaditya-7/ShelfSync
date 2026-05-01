@@ -1,11 +1,15 @@
 import sqlite3
+import os
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 
+# Use /tmp on Vercel (read-only filesystem), local path otherwise
+DB_PATH = '/tmp/library.db' if os.environ.get('VERCEL') else 'library.db'
+
 def get_db_connection():
-    conn = sqlite3.connect('library.db', check_same_thread=False)
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     return conn
 
