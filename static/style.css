@@ -128,6 +128,11 @@ body {
     font-size: 1.1rem; color: white;
     box-shadow: 0 4px 16px var(--accent-glow);
 }
+.sidebar-logo-img {
+    max-height: 45px;
+    width: auto;
+    object-fit: contain;
+}
 
 .nav-section {
     font-size: .7rem; font-weight: 700;
@@ -476,7 +481,17 @@ body {
 }
 
 /* Logo icon + rings */
-.splash-logo { position: relative; width: 100px; height: 100px; margin-bottom: .5rem; }
+.splash-logo { position: relative; width: 100px; height: 100px; margin-bottom: .5rem; display: flex; align-items: center; justify-content: center; }
+
+.splash-logo-img {
+    position: relative;
+    z-index: 2;
+    max-width: 120px;
+    max-height: 80px;
+    object-fit: contain;
+    animation: splashIconIn .7s cubic-bezier(.16,1,.3,1) .2s both;
+    filter: drop-shadow(0 0 20px rgba(255,255,255,0.2));
+}
 
 .splash-icon {
     position: absolute; inset: 0;
