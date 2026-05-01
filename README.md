@@ -6,6 +6,12 @@
   [![Flask](https://img.shields.io/badge/Flask-Web_Framework-black.svg)](https://flask.palletsprojects.com/)
   [![SQLite](https://img.shields.io/badge/SQLite-Database-lightgrey.svg)](https://www.sqlite.org/)
   [![Vanilla JS](https://img.shields.io/badge/JavaScript-Vanilla-yellow.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+  [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?logo=vercel)](https://shelf-sync-murex.vercel.app/)
+
+  <br/>
+  <a href="https://shelf-sync-murex.vercel.app/">
+    <strong>🌐 View Live Demo → shelf-sync-murex.vercel.app</strong>
+  </a>
 </div>
 
 ---
