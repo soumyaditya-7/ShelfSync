@@ -53,6 +53,7 @@ The project is delivered in **two versions**:
 | **3-Book Limit** | Enforces a maximum of 3 issued books per student |
 | **Real-time Search** | Filter the catalog instantly by title, author, or ISBN |
 | **Dashboard** | Overview of total titles, copies, availability & active issues |
+| **🎮 Trust Score System** | Every student starts with a score of **100**. Score drops **-5/day** for overdue books and gains **+2** for on-time returns. If score falls **below 50**, issuing new books is automatically blocked until fines are paid. |
 
 ---
 
@@ -77,8 +78,18 @@ Browser (HTML/CSS/JS)
 | Table | Columns |
 |---|---|
 | `books` | `id`, `title`, `author`, `isbn` (unique), `total_copies`, `available_copies` |
-| `students` | `id` (primary key), `name` |
+| `students` | `id` (primary key), `name`, `trust_score` (default 100) |
 | `issued_books` | `id`, `student_id` (FK), `isbn` (FK), `issue_date`, `due_date` |
+
+### Trust Score Rules
+
+| Event | Score Change |
+|---|---|
+| Book returned on time or early | **+2 points** |
+| Book overdue by N days | **-5 × N points** |
+| Score drops below 50 | **Blocked from issuing new books** |
+| Minimum possible score | **0** |
+| Maximum possible score | **100** |
 
 ---
 
