@@ -243,9 +243,54 @@ def force_seed():
     ]
     conn.executemany('INSERT OR IGNORE INTO students (id, name) VALUES (?,?)', students)
     conn.commit()
-    count = conn.execute('SELECT COUNT(*) FROM students').fetchone()[0]
+
+    # Seed sample issued books (clear existing first to avoid duplicates on re-seed)
+    conn.execute('DELETE FROM issued_books')
+    # Reset available copies back to total before re-seeding
+    conn.execute('UPDATE books SET available_copies = total_copies')
+    conn.commit()
+
+    today = datetime.utcnow().date()
+
+    issued = [
+        # Active issues (due in future)
+        ("240012292870", "9780132350884",
+         str(today - timedelta(days=3)), str(today + timedelta(days=11))),   # NILADREE - Clean Code
+        ("240012726145", "9780735211292",
+         str(today - timedelta(days=1)), str(today + timedelta(days=13))),   # SOUMYADITYA - Atomic Habits
+        ("240012537316", "9781593279288",
+         str(today - timedelta(days=5)), str(today + timedelta(days=9))),    # ARYAN - Python Crash Course
+        ("240012300856", "9780262033848",
+         str(today - timedelta(days=2)), str(today + timedelta(days=12))),   # ANANT - Intro to Algorithms
+        ("240012327526", "9780060935467",
+         str(today - timedelta(days=4)), str(today + timedelta(days=10))),   # PRAJWAL - To Kill a Mockingbird
+        # Overdue issues (due in past)
+        ("240012343451", "9781491924464",
+         str(today - timedelta(days=20)), str(today - timedelta(days=6))),   # DIPAYAN - You Don't Know JS (overdue)
+        ("240012362486", "9780062316097",
+         str(today - timedelta(days=18)), str(today - timedelta(days=4))),   # ANANT GUPTA - Sapiens (overdue)
+        ("240012418909", "9780451524935",
+         str(today - timedelta(days=25)), str(today - timedelta(days=11))), # RAHUL - 1984 (overdue)
+    ]
+
+    for student_id, isbn, issue_date, due_date in issued:
+        conn.execute(
+            'INSERT INTO issued_books (student_id, isbn, issue_date, due_date) VALUES (?,?,?,?)',
+            (student_id, isbn, issue_date, due_date)
+        )
+        conn.execute(
+            'UPDATE books SET available_copies = available_copies - 1 WHERE isbn = ?', (isbn,)
+        )
+    conn.commit()
+
+    student_count = conn.execute('SELECT COUNT(*) FROM students').fetchone()[0]
+    issue_count = conn.execute('SELECT COUNT(*) FROM issued_books').fetchone()[0]
     conn.close()
-    return jsonify({"message": f"Seed complete. {count} members now in database.", "count": count})
+    return jsonify({
+        "message": f"Seed complete. {student_count} members and {issue_count} issued records now in database.",
+        "students": student_count,
+        "issued_books": issue_count
+    })
 
 @app.route('/api/books', methods=['GET'])
 def get_books():
