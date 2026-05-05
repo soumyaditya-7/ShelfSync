@@ -157,7 +157,40 @@ def seed_db():
     ]
     conn.executemany('INSERT OR IGNORE INTO students (id, name) VALUES (?,?)', students)
 
-    # Removed hardcoded issued books to ensure the ledger starts completely empty.
+    # Only seed issued books if none exist yet (avoid wiping real user data)
+    issued_count = conn.execute('SELECT COUNT(*) FROM issued_books').fetchone()[0]
+    if issued_count == 0:
+        # Reset available copies to total first
+        conn.execute('UPDATE books SET available_copies = total_copies')
+
+        issued = [
+            # Active issues (due in future)
+            ("240012292870", "9780132350884",
+             str(today - timedelta(days=3)), str(today + timedelta(days=11))),   # NILADREE - Clean Code
+            ("240012726145", "9780735211292",
+             str(today - timedelta(days=1)), str(today + timedelta(days=13))),   # SOUMYADITYA - Atomic Habits
+            ("240012537316", "9781593279288",
+             str(today - timedelta(days=5)), str(today + timedelta(days=9))),    # ARYAN - Python Crash Course
+            ("240012300856", "9780262033848",
+             str(today - timedelta(days=2)), str(today + timedelta(days=12))),   # ANANT - Intro to Algorithms
+            ("240012327526", "9780060935467",
+             str(today - timedelta(days=4)), str(today + timedelta(days=10))),   # PRAJWAL - To Kill a Mockingbird
+            # Overdue issues (due in past)
+            ("240012343451", "9781491924464",
+             str(today - timedelta(days=20)), str(today - timedelta(days=6))),   # DIPAYAN - You Don't Know JS
+            ("240012362486", "9780062316097",
+             str(today - timedelta(days=18)), str(today - timedelta(days=4))),   # ANANT GUPTA - Sapiens
+            ("240012418909", "9780451524935",
+             str(today - timedelta(days=25)), str(today - timedelta(days=11))),  # RAHUL - 1984
+        ]
+        for student_id, isbn, issue_date, due_date in issued:
+            conn.execute(
+                'INSERT INTO issued_books (student_id, isbn, issue_date, due_date) VALUES (?,?,?,?)',
+                (student_id, isbn, issue_date, due_date)
+            )
+            conn.execute(
+                'UPDATE books SET available_copies = available_copies - 1 WHERE isbn = ?', (isbn,)
+            )
 
     conn.commit()
     conn.close()
