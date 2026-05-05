@@ -296,7 +296,7 @@ def get_students():
         students_list.append({
             "id": s['id'],
             "name": s['name'],
-            "trust_score": s.get('trust_score', 100) if 'trust_score' in s.keys() else 100,
+            "trust_score": dict(s).get('trust_score', 100),
             "issued_books": issued_isbns,
             "due_dates": due_dates
         })
@@ -371,7 +371,7 @@ def issue_book():
         conn.close()
         return jsonify({"error": "Student not found."}), 404
         
-    trust_score = student.get('trust_score', 100) if 'trust_score' in student.keys() else 100
+    trust_score = dict(student).get('trust_score', 100)
     if trust_score < 50:
         conn.close()
         return jsonify({"error": f"Issue blocked! Trust score is {trust_score} (Below 50). Fines must be paid."}), 400
@@ -429,7 +429,7 @@ def return_book():
         
     fine_str = ""
     trust_change_str = ""
-    current_trust = student.get('trust_score', 100) if 'trust_score' in student.keys() else 100
+    current_trust = dict(student).get('trust_score', 100)
     new_trust = current_trust
     
     due_date_str = dict(issued_record).get('due_date')
