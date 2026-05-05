@@ -99,22 +99,7 @@ def seed_db():
     ]
     conn.executemany('INSERT OR IGNORE INTO students (id, name) VALUES (?,?)', students)
 
-    # Issue some books — mix of active and overdue
-    issued = [
-        ("S001", "9780132350884", str(today - timedelta(days=5)),  str(today + timedelta(days=9))),
-        ("S002", "9781593279288", str(today - timedelta(days=18)), str(today - timedelta(days=4))),  # overdue
-        ("S003", "9780262033848", str(today - timedelta(days=2)),  str(today + timedelta(days=12))),
-        ("S004", "9780062316097", str(today - timedelta(days=22)), str(today - timedelta(days=8))),  # overdue
-        ("S005", "9780735211292", str(today - timedelta(days=1)),  str(today + timedelta(days=13))),
-    ]
-    for student_id, isbn, issue_date, due_date in issued:
-        conn.execute(
-            'INSERT INTO issued_books (student_id, isbn, issue_date, due_date) VALUES (?,?,?,?)',
-            (student_id, isbn, issue_date, due_date)
-        )
-        conn.execute(
-            'UPDATE books SET available_copies = available_copies - 1 WHERE isbn = ?', (isbn,)
-        )
+    # Removed hardcoded issued books to ensure the ledger starts completely empty.
 
     conn.commit()
     conn.close()
