@@ -64,10 +64,7 @@ init_db()
 def seed_db():
     """Populate DB with sample data if empty."""
     conn = get_db_connection()
-    book_count = conn.execute('SELECT COUNT(*) FROM books').fetchone()[0]
-    if book_count > 0:
-        conn.close()
-        return  # Already seeded
+    # Removed early return so INSERT OR IGNORE always processes new data on startup
 
     today = datetime.utcnow().date()
 
